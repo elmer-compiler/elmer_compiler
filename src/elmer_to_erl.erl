@@ -27,7 +27,11 @@ forms(Compiled = #elmo{}) ->
     forms(module, Compiled) ++
         forms(inlines, Compiled) ++
         forms(exports, Compiled) ++
-        forms(defs, Compiled).
+        forms(defs, Compiled) ++
+        forms(eof);
+
+forms(eof) ->
+    [{eof, ?ELINE}].
 
 forms(module, #elmo{json = ?JSON_MODNAME(ElmModule, ElmPackage)}) ->
     Module = elmer_util:elm_module_to_atom(ElmModule, ElmPackage),

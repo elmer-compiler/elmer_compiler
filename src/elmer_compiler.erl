@@ -52,6 +52,9 @@ compile_elmo_file(ElmoFile, Output) ->
     Erl = elmer_to_erl:from_file(ElmoFile),
     dump(Output, ElmoFile, Erl).
 
+dump(absform, Filename, Erl) ->
+    {Filename, Erl};
+
 dump(erlsrc, Filename, Erl) ->
     Src = lists:map(fun erl_pp:form/1, Erl),
     Bin = erlang:iolist_to_binary(Src),
