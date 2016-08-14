@@ -1,7 +1,16 @@
 sudo: false
 language: erlang
+
 otp_release:
   - 18.0
+
+os:
+  - osx
+
+matrix:
+  inlude:
+    - os: osx
+      osx_image: xcode7.3
 
 before_script:
   - |
