@@ -19,9 +19,9 @@ erl_parse_file(ElmoModuleName) ->
     {ok, Forms} = epp:parse_file(ErlFile, []),
     Forms.
 
-on_test_files_dir(Fun) ->
+on_cwd(Cwd, Fun) ->
     {ok, OldDir} = file:get_cwd(),
-    try file:set_cwd("test/files/") of
+    try file:set_cwd(Cwd) of
         ok -> Fun()
     after
         ok = file:set_cwd(OldDir)
@@ -29,7 +29,7 @@ on_test_files_dir(Fun) ->
 
 elm_compile(ElmModuleName) ->
     ElmFileName = ElmModuleName ++ ".elm",
-    on_test_files_dir(fun () -> elmer_compiler:compile([ElmFileName], absform, []) end).
+    on_cwd("test/files", fun () -> elmer_compiler:compile([ElmFileName], absform, []) end).
 
 elm_compile_module(ElmModuleName) ->
     ElmoFileName = ?BUILD_DIR ++ "/" ++ ElmModuleName ++ ".elmo",
