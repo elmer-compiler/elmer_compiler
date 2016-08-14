@@ -45,8 +45,11 @@ assert_elm_compiles_to_erl(ElmModuleName) ->
 does_not_compile_invalid_elm_file_test() ->
     ?assertEqual(error, elm_compile("Invalid")).
 
-compiles_module_exposing_just_a_constant_test() ->
-    assert_elm_compiles_to_erl("Constant").
+compiles_module_exposing_string_literal_test() ->
+    assert_elm_compiles_to_erl("StringLit").
+
+compiles_module_exposing_int_literal_test() ->
+    assert_elm_compiles_to_erl("IntLit").
 
 -endif.
 
