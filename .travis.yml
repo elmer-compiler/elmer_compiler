@@ -1,8 +1,7 @@
+sudo: false
 language: erlang
 otp_release:
   - 18.0
-os:
-  - osx
 
 before_script:
   - |
