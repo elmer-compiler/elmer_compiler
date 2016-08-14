@@ -1,0 +1,14 @@
+language: erlang
+otp_release:
+  - 18.2.1
+os:
+  - osx
+before_script:
+  - |
+    curl https://github.com/elmer-compiler/elmer-json-compiler/releases/download/untagged-90c8ba14a4fc38ff3fcb/elmer-json-compiler.tgz -O - | tar xvf
+  - |
+    curl https://s3.amazonaws.com/rebar3/rebar3 > rebar3
+    chmod 755 ./rebar3
+script:
+  - |
+    env PATH=$PATH:$PWD rebar3 eunit
