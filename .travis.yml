@@ -1,25 +1,11 @@
-sudo: false
-language: erlang
-
+sudo: required
+services:
+  - docker
+language:
+  - erlang
 otp_release:
   - 18.0
-
-os:
-  - osx
-
-matrix:
-  inlude:
-    - os: osx
-      osx_image: xcode7.3
-
-before_script:
-  - |
-    curl https://github.com/elmer-compiler/elmer-json-compiler/releases/download/untagged-90c8ba14a4fc38ff3fcb/elmer-json-compiler.tgz -O - | tar xvf
-    chmod 755 elm-*
-  - |
-    curl https://s3.amazonaws.com/rebar3/rebar3 > rebar3
-    chmod 755 rebar3
-
+install:
+  - docker build -t elm_compiler/test test/
 script:
-  - |
-    env PATH=$PATH:$PWD rebar3 eunit
+  - docker run elm_compiler/test /bin/sh -c 'cd elm_compiler && rebar3 eunit'
