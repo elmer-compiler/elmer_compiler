@@ -123,7 +123,7 @@ to_erl(?JSON_IF(Conds, Else)) ->
     ElseClause = {clause, ?ELINE, [], [{atom, 0, else}], exps(to_erl(Else)) },
     {'if', ?ELINE, CondClauses ++ [ElseClause]};
 
-to_erl(?JSON_CASE(Name, Decider, JumpsAry)) ->
+to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
     %% Jumps = jumps_proplist(JumpsAry),
     %% Var = {var, ?ELINE, elmer_util:btoa(Name)},
     %% case_erl(Var, Decider, Jumps);
@@ -213,33 +213,38 @@ to_erl({call, {Name, Module, Package}, Args}) ->
 exps(B) when is_list(B) -> B;
 exps(E) -> [E].
 
-jumps_proplist(List) -> jumps_proplist(List, []).
-jumps_proplist([], Acc) -> Acc;
-jumps_proplist([[Key, Value] | Rest], Acc) ->
-    jumps_proplist(Rest, [{Key, Value}] ++ Acc).
 
-case_erl(_Var, ?JSON_LEAF_INLINE(Body), _Jumps) ->
-    to_erl(Body);
-case_erl(_Var, ?JSON_LEAF_JUMP(Target), Jumps) ->
-    Jump = proplists:get_value(Target, Jumps),
-    to_erl(Jump);
 
-case_erl(Var, ?JSON_CHAIN(TestChain, Then, Else), Jumps) ->
-    Cond = case_cond(Var, TestChain),
-    ThenClause = {clause, ?ELINE, [], [Cond], exps(case_erl(Var, Then, Jumps))},
-    ElseClause = {clause, ?ELINE, [{atom, ?ELINE, 'else'}], [], exps(case_erl(Var, Else, Jumps))},
-    {'if', ?ELINE, Var, [ThenClause, ElseClause]}.
+%%%%%
+%% TODO: these were broken case impl
 
-case_cond(Var, TestChain) ->
-    case_and([case_test(Var, Test) || Test <- TestChain]).
+%% jumps_proplist(List) -> jumps_proplist(List, []).
+%% jumps_proplist([], Acc) -> Acc;
+%% jumps_proplist([[Key, Value] | Rest], Acc) ->
+%%     jumps_proplist(Rest, [{Key, Value}] ++ Acc).
 
-case_and([A | B]) ->
-    {op, ?ELINE, 'andalso', A, case_and(B)};
-case_and([A]) -> A.
+%% case_erl(_Var, ?JSON_LEAF_INLINE(Body), _Jumps) ->
+%%     to_erl(Body);
+%% case_erl(_Var, ?JSON_LEAF_JUMP(Target), Jumps) ->
+%%     Jump = proplists:get_value(Target, Jumps),
+%%     to_erl(Jump);
 
-case_test(Var, [At, Cond]) ->
-    case_pattern(Cond).
+%% case_erl(Var, ?JSON_CHAIN(TestChain, Then, Else), Jumps) ->
+%%     Cond = case_cond(Var, TestChain),
+%%     ThenClause = {clause, ?ELINE, [], [Cond], exps(case_erl(Var, Then, Jumps))},
+%%     ElseClause = {clause, ?ELINE, [{atom, ?ELINE, 'else'}], [], exps(case_erl(Var, Else, Jumps))},
+%%     {'if', ?ELINE, Var, [ThenClause, ElseClause]}.
 
-case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(Name, ?JSON_MODULE(Module, Package)))) ->
-    22.
+%% case_cond(Var, TestChain) ->
+%%     case_and([case_test(Var, Test) || Test <- TestChain]).
+
+%% case_and([A | B]) ->
+%%     {op, ?ELINE, 'andalso', A, case_and(B)};
+%% case_and([A]) -> A.
+
+%% case_test(Var, [At, Cond]) ->
+%%     case_pattern(Cond).
+
+%% case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(Name, ?JSON_MODULE(Module, Package)))) ->
+%%     22.
 
