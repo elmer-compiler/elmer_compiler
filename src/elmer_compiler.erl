@@ -25,9 +25,7 @@ elm_files(ElmFiles, Output, Options) ->
     Pid = erlang:open_port({spawn, Cmd}, [stderr_to_stdout, exit_status, stream, {line, 255}]),
     case wait_for_elm_make(Pid) of
       error -> error;
-      ok ->
-            compile_elmo_files(stdout),
-            ok
+      ok -> compile_elmo_files(Output)
     end.
 
 elm_make_cmd(ElmFiles, Options) ->
@@ -46,10 +44,18 @@ wait_for_elm_make(Pid) ->
 
 compile_elmo_files(Output) ->
     ElmoFiles = filelib:wildcard("elm-stuff/**/*.elmo"),
-    lists:map(fun (FileName) ->
-                      Erl = elmer_to_erl:from_file(FileName),
-                      dump(Output, FileName, Erl)
+    lists:map(fun (ElmoFile) ->
+               compile_elmo_file(ElmoFile, Output)
               end, ElmoFiles).
+
+compile_elmo_file(ElmoFile, Output) ->
+    Erl = elmer_to_erl:from_file(ElmoFile),
+    dump(Output, ElmoFile, Erl).
+
+dump(erlsrc, Filename, Erl) ->
+    Src = lists:map(fun erl_pp:form/1, Erl),
+    Bin = erlang:iolist_to_binary(Src),
+    {Filename, Bin};
 
 dump(stdout, Filename, Erl) ->
     io:format("-----~n|~s~n-----~n~s~n", [
