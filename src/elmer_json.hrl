@@ -44,7 +44,7 @@
         #{ <<"tag">> := <<"TopLevel">> }).
 
 -define(JSON_LOCAL,
-        #{ <<"tag">> := <<"Local">>, <<"contents">> := [] }).
+        #{ <<"tag">> := <<"Local">> }).
 
 -define(JSON_EMPTY,
         #{ <<"tag">> := <<"Empty">>, <<"contents">> := [] }).
