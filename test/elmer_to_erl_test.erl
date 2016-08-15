@@ -48,8 +48,18 @@ does_not_compile_invalid_elm_file_test() ->
 compiles_module_exposing_string_literal_test() ->
     assert_elm_compiles_to_erl("StringLit").
 
+compiles_module_exposing_char_literal_test() ->
+    assert_elm_compiles_to_erl("CharLit").
+
 compiles_module_exposing_int_literal_test() ->
     assert_elm_compiles_to_erl("IntLit").
+
+compiles_module_exposing_float_literal_test() ->
+    assert_elm_compiles_to_erl("FloatLit").
+
+compiles_module_exposing_bool_literal_test() ->
+    assert_elm_compiles_to_erl("BoolLit").
+
 
 -endif.
 

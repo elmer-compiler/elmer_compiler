@@ -191,6 +191,9 @@ to_erl(?JSON_INT(Binary)) when is_binary(Binary) ->
 to_erl(?JSON_INT(Int)) when is_number(Int) ->
     {integer, ?ELINE, Int};
 
+to_erl(?JSON_FLT(Flt)) when is_number(Flt) ->
+    {float, ?ELINE, Flt};
+
 to_erl(?JSON_CHR(<<Chr>>)) ->
     {integer, ?ELINE, Chr};
 

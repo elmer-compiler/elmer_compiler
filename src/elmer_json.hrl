@@ -91,6 +91,9 @@
 -define(JSON_INT(Content),
         #{ <<"tag">> := <<"IntNum">>, <<"contents">> := Content }).
 
+-define(JSON_FLT(Content),
+        #{ <<"tag">> := <<"FloatNum">>, <<"contents">> := Content }).
+
 -define(JSON_CHR(Content),
         #{ <<"tag">> := <<"Chr">>, <<"contents">> := Content }).
 
