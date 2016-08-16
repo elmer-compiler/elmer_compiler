@@ -76,6 +76,9 @@ compiles_DefPartialBinopFun_test() ->
 compiles_IfElse_test() ->
     assert_elm_compiles_to_erl("IfElse").
 
+compiles_IfElseNested_test() ->
+    assert_elm_compiles_to_erl("IfElseNested").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 

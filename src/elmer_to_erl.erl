@@ -126,14 +126,8 @@ to_erl(?JSON_LOCALVAR(Name)) ->
 to_erl(?JSON_LET(Defs, Body)) ->
     [{match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs] ++ exps(to_erl(Body));
 
-%% single if-else
-to_erl(?JSON_IF([[Cond, Then]], Else)) ->
-    ThenClause = {clause, ?ELINE, [{atom, 0, true}], [], exps(to_erl(Then))},
-    ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
-    {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
-
-to_erl(?JSON_IF(_, _)) ->
-    {atom, ?ELINE, todo_vic};
+to_erl(?JSON_IF(Conds, Else)) ->
+    to_erl({ifelse, Conds, Else});
 
 to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
     %% Jumps = jumps_proplist(JumpsAry),
@@ -223,43 +217,21 @@ to_erl({def, Name, Value}) ->
 to_erl({call, {Name, Module, Package}, Args}) ->
     NameAtom = {atom, ?ELINE, elmer_util:btoa(Name)},
     ModuleAtom = {atom, ?ELINE, elmer_util:elm_module_to_atom(Module, Package)},
-    {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, Args}.
+    {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, Args};
+
+%% single if-else
+to_erl({ifelse, [[Cond, Then]], Else}) ->
+    to_erl({ifelse, Cond, Then, Else});
+
+%% nested if-else
+to_erl({ifelse, [[CondA, ThenA] | Conds], Else}) ->
+    to_erl({ifelse, CondA, ThenA, {ifelse, Conds, Else}});
+
+to_erl({ifelse, Cond, Then, Else}) ->
+    ThenClause = {clause, ?ELINE, [{atom, 0, true}], [], exps(to_erl(Then))},
+    ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
+    {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]}.
 
 exps(B) when is_list(B) -> B;
 exps(E) -> [E].
-
-
-
-%%%%%
-%% TODO: these were broken case impl
-
-%% jumps_proplist(List) -> jumps_proplist(List, []).
-%% jumps_proplist([], Acc) -> Acc;
-%% jumps_proplist([[Key, Value] | Rest], Acc) ->
-%%     jumps_proplist(Rest, [{Key, Value}] ++ Acc).
-
-%% case_erl(_Var, ?JSON_LEAF_INLINE(Body), _Jumps) ->
-%%     to_erl(Body);
-%% case_erl(_Var, ?JSON_LEAF_JUMP(Target), Jumps) ->
-%%     Jump = proplists:get_value(Target, Jumps),
-%%     to_erl(Jump);
-
-%% case_erl(Var, ?JSON_CHAIN(TestChain, Then, Else), Jumps) ->
-%%     Cond = case_cond(Var, TestChain),
-%%     ThenClause = {clause, ?ELINE, [], [Cond], exps(case_erl(Var, Then, Jumps))},
-%%     ElseClause = {clause, ?ELINE, [{atom, ?ELINE, 'else'}], [], exps(case_erl(Var, Else, Jumps))},
-%%     {'if', ?ELINE, Var, [ThenClause, ElseClause]}.
-
-%% case_cond(Var, TestChain) ->
-%%     case_and([case_test(Var, Test) || Test <- TestChain]).
-
-%% case_and([A | B]) ->
-%%     {op, ?ELINE, 'andalso', A, case_and(B)};
-%% case_and([A]) -> A.
-
-%% case_test(Var, [At, Cond]) ->
-%%     case_pattern(Cond).
-
-%% case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(Name, ?JSON_MODULE(Module, Package)))) ->
-%%     22.
 
