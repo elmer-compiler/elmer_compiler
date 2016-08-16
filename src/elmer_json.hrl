@@ -158,11 +158,3 @@
 -define(JSON_LET(Defs, Body),
         #{<<"tag">> := <<"Let">>, <<"contents">> := [ Defs, Body ]}).
 
--define(JSON_TUPLE0,
-        #{<<"contents">> := [<<"_Tuple0">>,[]],<<"tag">> := <<"Data">>}).
-
--define(JSON_TUPLE1(A),
-        #{<<"contents">> := [<<"_Tuple1">>,[A]],<<"tag">> := <<"Data">>}).
-
--define(JSON_TUPLE2(A,B),
-        #{<<"contents">> := [<<"_Tuple2">>,[A, B]],<<"tag">> := <<"Data">>}).

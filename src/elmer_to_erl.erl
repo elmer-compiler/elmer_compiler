@@ -174,15 +174,6 @@ to_erl(?JSON_RANGE(A, B)) ->
     {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, elmer_runtime},
                     {atom, ?ELINE, list}}, [Range]};
 
-to_erl(?JSON_TUPLE0) ->
-    {tuple, ?ELINE, []};
-
-to_erl(?JSON_TUPLE1(A)) ->
-    {tuple, ?ELINE, [to_erl(A)]};
-
-to_erl(?JSON_TUPLE2(A, B)) ->
-    {tuple, ?ELINE, [to_erl(A), to_erl(B)]};
-
 to_erl(?JSON_LIST(List)) ->
     to_erl({cons, List});
 
