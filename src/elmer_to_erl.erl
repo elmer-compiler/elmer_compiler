@@ -126,10 +126,14 @@ to_erl(?JSON_LOCALVAR(Name)) ->
 to_erl(?JSON_LET(Defs, Body)) ->
     [{match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs] ++ exps(to_erl(Body));
 
-to_erl(?JSON_IF(Conds, Else)) ->
-    CondClauses = [{clause, ?ELINE, [], [to_erl(Cond)], exps(to_erl(Then))} || [Cond, Then] <- Conds],
-    ElseClause = {clause, ?ELINE, [], [{atom, 0, else}], exps(to_erl(Else)) },
-    {'if', ?ELINE, CondClauses ++ [ElseClause]};
+%% single if-else
+to_erl(?JSON_IF([[Cond, Then]], Else)) ->
+    ThenClause = {clause, ?ELINE, [{atom, 0, true}], [], exps(to_erl(Then))},
+    ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
+    {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
+
+to_erl(?JSON_IF(_, _)) ->
+    {atom, ?ELINE, todo_vic};
 
 to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
     %% Jumps = jumps_proplist(JumpsAry),
