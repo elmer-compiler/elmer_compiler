@@ -3,4 +3,4 @@
 -export([ 'fun'/0 ]).
 
 'fun'() ->
-    ('Elm.Basics':'+'())([2]).
+    ('Elm.Basics':clamp())([100, 200]).

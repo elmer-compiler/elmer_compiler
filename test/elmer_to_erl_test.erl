@@ -67,6 +67,9 @@ compiles_BoolLit_test() ->
 compiles_DefPartialFun_test() ->
     assert_elm_compiles_to_erl("DefPartialFun").
 
+compiles_DefPartialBinopFun_test() ->
+    assert_elm_compiles_to_erl("DefPartialBinopFun").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
