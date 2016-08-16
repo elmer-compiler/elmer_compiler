@@ -8,6 +8,11 @@
 %% TODO: make elm-compiler export line numbers.
 -define(ELINE, 0).
 
+-define(ELMER_PARTIAL(Fun), 
+        {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, elmer_runtime},
+                        {atom, ?ELINE, partial}},
+         [Fun]}).
+
 -record(elmo,
         { json
         , atts = []
@@ -70,8 +75,7 @@ compile(?JSON_DEF_FROM_MOD(Name, Var, Module, Package),
     Inline = {elmer_util:btoa(Name), 0},
     Elmo#elmo{ defs = [Def | Defs], inlines = [Inline | Inlines]};
 
-compile(?JSON_DEF(Name, Value),
-         Elmo = #elmo{ defs = Defs }) ->
+compile(?JSON_DEF(Name, Value), Elmo = #elmo{ defs = Defs }) ->
     Def = to_erl({def, Name, to_erl(Value)}),
     Elmo#elmo{ defs = [Def | Defs]};
 
@@ -117,10 +121,10 @@ to_erl(?JSON_ACCESS(At, Slot)) when is_binary(Slot) ->
     {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, maps}, {atom, ?ELINE, get}}, [{atom, ?ELINE, elmer_util:btoa(Slot)}, to_erl(At)]};
 
 to_erl(?JSON_LOCALVAR(Name)) ->
-    {var, ?ELINE, elmer_util:btoa(Name)};
+    {var, ?ELINE, elmer_util:var(Name)};
 
 to_erl(?JSON_LET(Defs, Body)) ->
-    [{match, ?ELINE, {var, ?ELINE, elmer_util:btoa(Name)}, to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs] ++ exps(to_erl(Body));
+    [{match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs] ++ exps(to_erl(Body));
 
 to_erl(?JSON_IF(Conds, Else)) ->
     CondClauses = [{clause, ?ELINE, [], [to_erl(Cond)], exps(to_erl(Then))} || [Cond, Then] <- Conds],
@@ -133,18 +137,13 @@ to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
     %% case_erl(Var, Decider, Jumps);
     {atom, ?ELINE, todo_vic};
 
-
-%% Function definition that just calls binop with params in same order
-%% is exactly the same as just a reference to the binop.
-to_erl(?JSON_FUN([A, B], ?JSON_BINOP(Fun, ?JSON_LOCALVAR(A), ?JSON_LOCALVAR(B)))) ->
-    to_erl(Fun);
-
 to_erl(?JSON_FUN(Args, Content)) ->
-    VArgs = [{var, ?ELINE, elmer_util:btoa(A)} || A <- Args],
-    {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}};
+    VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
+    Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
+    ?ELMER_PARTIAL(Fun);
 
 to_erl(?JSON_BINOP(Op, Left, Right)) ->
-    {call, ?ELINE, to_erl(Op), [to_erl(Left), to_erl(Right)]};
+    {call, ?ELINE, to_erl(Op), [to_erl({cons, [Left, Right]})]};
 
 to_erl(?JSON_REF(Name, ?JSON_MODULE(Module, Package))) ->
     to_erl({call, {Name, Module, Package}, []});
@@ -153,7 +152,7 @@ to_erl(?JSON_REF(Name, ?JSON_TOPLEVEL)) ->
     {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};
 
 to_erl(?JSON_CALL(Fun, Args)) ->
-    {call, ?ELINE, to_erl(Fun), [to_erl(A) || A <- Args]};
+    {call, ?ELINE, to_erl(Fun), [to_erl({cons, Args})]};
 
 to_erl(?JSON_TOPLVAR(Name)) ->
     {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};

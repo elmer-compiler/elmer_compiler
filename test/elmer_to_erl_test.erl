@@ -36,30 +36,39 @@ elm_compile_module(ElmModuleName) ->
     Compiled = elm_compile(ElmModuleName),
     proplists:get_value(ElmoFileName, Compiled, elm_not_compiled).
 
+absforms_to_bin(AbsForms) ->
+    Src = lists:map(fun erl_pp:form/1, AbsForms),
+    erlang:iolist_to_binary(Src).
+
 assert_elm_compiles_to_erl(ElmModuleName) ->
     CompiledForms = reset_forms_line(elm_compile_module(ElmModuleName)),
     %% Ignore file attribute from expected erl code. (TODO: fix when we have original elm file name)
     [{attribute, _, file, _} | ExpectedForms ] = reset_forms_line(erl_parse_file(ElmModuleName)),
     ?assertEqual(ExpectedForms, CompiledForms).
 
-does_not_compile_invalid_elm_file_test() ->
+does_not_compile_Invalid_test() ->
     ?assertEqual(error, elm_compile("Invalid")).
 
-compiles_module_exposing_string_literal_test() ->
+compiles_StringLit_test() ->
     assert_elm_compiles_to_erl("StringLit").
 
-compiles_module_exposing_char_literal_test() ->
+compiles_CharLit_test() ->
     assert_elm_compiles_to_erl("CharLit").
 
-compiles_module_exposing_int_literal_test() ->
+compiles_IntLit_test() ->
     assert_elm_compiles_to_erl("IntLit").
 
-compiles_module_exposing_float_literal_test() ->
+compiles_FloatLit_test() ->
     assert_elm_compiles_to_erl("FloatLit").
 
-compiles_module_exposing_bool_literal_test() ->
+compiles_BoolLit_test() ->
     assert_elm_compiles_to_erl("BoolLit").
 
+compiles_DefFun_test() ->
+    assert_elm_compiles_to_erl("DefFun").
 
--endif.
+compiles_ImportExposing_testPending() ->
+    assert_elm_compiles_to_erl("ImportExposing").
+
+-endif. %%  TEST
 
