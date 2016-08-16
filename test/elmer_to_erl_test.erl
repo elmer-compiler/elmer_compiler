@@ -67,6 +67,9 @@ compiles_BoolLit_test() ->
 compiles_ListLit_test() ->
     assert_elm_compiles_to_erl("ListLit").
 
+compiles_ListRangeLit_test() ->
+    assert_elm_compiles_to_erl("ListRangeLit").
+
 compiles_ConsLit_test() ->
     assert_elm_compiles_to_erl("ConsLit").
 

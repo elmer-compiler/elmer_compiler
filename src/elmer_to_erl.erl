@@ -164,7 +164,9 @@ to_erl(?JSON_MODVAR(Name, Module, Package)) ->
     to_erl({call, {Name, Module, Package}, []});
 
 to_erl(?JSON_RANGE(A, B)) ->
-    {tuple, ?ELINE, [{atom, ?ELINE, range}, to_erl(A), to_erl(B)]};
+    Range = {tuple, ?ELINE, [{atom, ?ELINE, range}, to_erl(A), to_erl(B)]},
+    {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, elmer_runtime},
+                    {atom, ?ELINE, list}}, [Range]};
 
 to_erl(?JSON_TUPLE0) ->
     {tuple, ?ELINE, []};
