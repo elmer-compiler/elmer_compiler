@@ -137,6 +137,11 @@ to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
     %% case_erl(Var, Decider, Jumps);
     {atom, ?ELINE, todo_vic};
 
+%% Optimize anonymous functions that just call a binop with
+%% same exact arguments.
+to_erl(?JSON_FUN_INLINE_BINOP(Op)) ->
+    to_erl(Op);
+
 to_erl(?JSON_FUN(Args, Content)) ->
     VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
     Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},

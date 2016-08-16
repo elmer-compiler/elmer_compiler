@@ -112,6 +112,12 @@
         #{ <<"tag">> := <<"Call">>,
            <<"contents">> := [Fun, Args]}).
 
+%% We can inline anonymous functions that just
+%% delegate all of its arguments to a binop
+-define(JSON_FUN_INLINE_BINOP(Op),
+        ?JSON_FUN([L, R], ?JSON_BINOP(Op, ?JSON_LOCALVAR(L), ?JSON_LOCALVAR(R)))).
+
+
 -define(JSON_RECORD(Content),
         #{<<"tag">> := <<"Record">>, <<"contents">> := Content}).
 
