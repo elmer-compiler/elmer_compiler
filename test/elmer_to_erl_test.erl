@@ -64,8 +64,8 @@ compiles_FloatLit_test() ->
 compiles_BoolLit_test() ->
     assert_elm_compiles_to_erl("BoolLit").
 
-compiles_DefFun_test() ->
-    assert_elm_compiles_to_erl("DefFun").
+compiles_DefPartialFun_test() ->
+    assert_elm_compiles_to_erl("DefPartialFun").
 
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").

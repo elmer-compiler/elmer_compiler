@@ -1,4 +1,4 @@
--module('Elm.DefFun').
+-module('Elm.DefPartialFun').
 
 -export([ 'fun'/0 ]).
 
