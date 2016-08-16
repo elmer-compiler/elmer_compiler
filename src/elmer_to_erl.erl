@@ -99,12 +99,18 @@ to_erl(?JSON_UPDATE(At, Updates)) ->
 to_erl({X, [Name, Value]}) when X == map_field_assoc orelse X == map_field_exact ->
     {X, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, to_erl(Value)};
 
-
-%% to_erl(?JSON_DATA(Name, Fields)) when
-%%       Name == <<"_Tuple0">> orelse
-%%       Name == <<"_Tuple1">> orelse
-%%       Name == <<"_Tuple2">> ->
-%%     {tuple, ?ELINE, [to_erl(F) || F <- Fields]};
+to_erl(?JSON_DATA(Name, Fields)) when
+      Name == <<"_Tuple0">> orelse
+      Name == <<"_Tuple1">> orelse
+      Name == <<"_Tuple2">> orelse
+      Name == <<"_Tuple3">> orelse
+      Name == <<"_Tuple4">> orelse
+      Name == <<"_Tuple5">> orelse
+      Name == <<"_Tuple6">> orelse
+      Name == <<"_Tuple7">> orelse
+      Name == <<"_Tuple8">> orelse
+      Name == <<"_Tuple9">> ->
+    {tuple, ?ELINE, [to_erl(F) || F <- Fields]};
 
 %% to_erl(?JSON_DATA(Name, [])) ->
 %%     {atom, ?ELINE, elmer_util:btoa(Name)};

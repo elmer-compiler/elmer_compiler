@@ -73,6 +73,9 @@ compiles_ListRangeLit_test() ->
 compiles_ConsLit_test() ->
     assert_elm_compiles_to_erl("ConsLit").
 
+compiles_TupleLit_test() ->
+    assert_elm_compiles_to_erl("TupleLit").
+
 compiles_DefFun_test() ->
     assert_elm_compiles_to_erl("DefFun").
 
