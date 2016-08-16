@@ -8,10 +8,10 @@
 %% TODO: make elm-compiler export line numbers.
 -define(ELINE, 0).
 
--define(ELMER_PARTIAL(Fun), 
+-define(ELMER_PARTIAL(Fun, Arity), 
         {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, elmer_runtime},
                         {atom, ?ELINE, partial}},
-         [Fun]}).
+         [Fun, {integer, ?ELINE, Arity}]}).
 
 -record(elmo,
         { json
@@ -140,7 +140,7 @@ to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
 to_erl(?JSON_FUN(Args, Content)) ->
     VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
     Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
-    ?ELMER_PARTIAL(Fun);
+    ?ELMER_PARTIAL(Fun, length(Args));
 
 to_erl(?JSON_BINOP(Op, Left, Right)) ->
     {call, ?ELINE, to_erl(Op), [to_erl({cons, [Left, Right]})]};
