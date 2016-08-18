@@ -93,6 +93,9 @@ compiles_Union_test() ->
 compiles_UnionRecursive_test() ->
     assert_elm_compiles_to_erl("UnionRecursive").
 
+compiles_UnionParam_test() ->
+    assert_elm_compiles_to_erl("UnionParam").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
