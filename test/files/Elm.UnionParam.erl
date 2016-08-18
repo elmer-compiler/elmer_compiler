@@ -4,6 +4,6 @@
 
 'Bar'() ->
     elmer_runtime:partial(fun (V_a) ->
-                                  {'Bar', V_a}
+                                  {'Bar', {V_a}}
                           end, 1).
 

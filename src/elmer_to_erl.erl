@@ -119,12 +119,8 @@ to_erl(?JSON_DATA(Name, Fields)) when
       Name == <<"_Tuple9">> ->
     {tuple, ?ELINE, [to_erl(F) || F <- Fields]};
 
-%% Data constructors
-to_erl(?JSON_DATA(Name, [])) ->
-    {atom, ?ELINE, elmer_util:btoa(Name)};
 to_erl(?JSON_DATA(Name, Fields)) ->
-    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(Name)} | [to_erl(F) || F <- Fields]]};
-
+    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(Name)}, {tuple, ?ELINE, [to_erl(F) || F <- Fields]}]};
 
 to_erl(?JSON_DATAACCESS(At, Index)) when is_number(Index) ->
     Idx = {number, ?ELINE, Index + 1},

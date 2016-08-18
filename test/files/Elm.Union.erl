@@ -3,7 +3,7 @@
 -export([ 'Cat'/0, 'Dog'/0 ]).
 
 'Cat'() ->
-    'Cat'.
+    {'Cat', {}}.
 
 'Dog'() ->
-    'Dog'.
+    {'Dog', {}}.
