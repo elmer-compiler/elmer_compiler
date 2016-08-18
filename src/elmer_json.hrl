@@ -158,3 +158,8 @@
 -define(JSON_LET(Defs, Body),
         #{<<"tag">> := <<"Let">>, <<"contents">> := [ Defs, Body ]}).
 
+-define(JSON_UNION_EXPLICITS(UnionName, Explicits),
+        #{<<"tag">> := <<"Union">>,
+          <<"contents">> := [ UnionName, #{
+                                <<"_explicits">> := Explicits
+                               }]}).

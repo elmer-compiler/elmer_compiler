@@ -53,6 +53,17 @@ forms(exports, #elmo{exports = Exports}) ->
 forms(defs, #elmo{ defs = Defs}) ->
      Defs.
 
+elm_export(?JSON_VALUE(Name), NewElmo = #elmo{exports = OldExports}) ->
+    Export = {elmer_util:btoa(Name), 0},
+    NewElmo#elmo{exports = [Export | OldExports]};
+
+elm_export(?JSON_UNION_EXPLICITS(_UnionName, Explicits), NewElmo = #elmo{exports = OldExports}) ->
+    Constructors = [{elmer_util:btoa(Name), 0} || Name <- Explicits],
+    NewElmo#elmo{exports = Constructors ++ OldExports};
+
+elm_export(_, Elmo) -> %% TODO: missing exports
+    Elmo.
+
 compile(Elmo = #elmo{}) ->
     ?JSON_MODNAME(Name, Package) = Elmo#elmo.json,
     io:format("=====> ~p~n", [{Name, Package}]),
@@ -60,11 +71,7 @@ compile(Elmo = #elmo{}) ->
     forms(Compiled).
 
 compile(exports, Elmo = #elmo{json = ?JSON_EXPORTS(Exports)}) ->
-    lists:foldl(fun (?JSON_VALUE(Name), NewElmo = #elmo{exports = OldExports}) ->
-                     Export = {elmer_util:btoa(Name), 0},
-                        NewElmo#elmo{exports = [Export | OldExports]} ;
-                     (_, NewElmo) -> NewElmo
-              end, Elmo, Exports);
+    lists:foldl(fun elm_export/2, Elmo, Exports);
 
 compile(programs, Elmo = #elmo{json = ?JSON_PROGRAM(Programs)}) ->
     lists:foldl(fun compile/2, Elmo, Programs);
@@ -112,12 +119,12 @@ to_erl(?JSON_DATA(Name, Fields)) when
       Name == <<"_Tuple9">> ->
     {tuple, ?ELINE, [to_erl(F) || F <- Fields]};
 
-%% to_erl(?JSON_DATA(Name, [])) ->
-%%     {atom, ?ELINE, elmer_util:btoa(Name)};
-
+%% Data constructors
+to_erl(?JSON_DATA(Name, [])) ->
+    {atom, ?ELINE, elmer_util:btoa(Name)};
 to_erl(?JSON_DATA(Name, Fields)) ->
-    %% {DataName, {DataFields...}}
-    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(Name)}, {tuple, ?ELINE, [to_erl(F) || F <- Fields]}]};
+    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(Name)} | [to_erl(F) || F <- Fields]]};
+
 
 to_erl(?JSON_DATAACCESS(At, Index)) when is_number(Index) ->
     Idx = {number, ?ELINE, Index + 1},

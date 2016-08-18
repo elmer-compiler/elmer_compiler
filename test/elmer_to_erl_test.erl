@@ -36,10 +36,6 @@ elm_compile_module(ElmModuleName) ->
     Compiled = elm_compile(ElmModuleName),
     proplists:get_value(ElmoFileName, Compiled, elm_not_compiled).
 
-absforms_to_bin(AbsForms) ->
-    Src = lists:map(fun erl_pp:form/1, AbsForms),
-    erlang:iolist_to_binary(Src).
-
 assert_elm_compiles_to_erl(ElmModuleName) ->
     CompiledForms = reset_forms_line(elm_compile_module(ElmModuleName)),
     %% Ignore file attribute from expected erl code. (TODO: fix when we have original elm file name)
@@ -90,6 +86,9 @@ compiles_IfElse_test() ->
 
 compiles_IfElseNested_test() ->
     assert_elm_compiles_to_erl("IfElseNested").
+
+compiles_Union_test() ->
+    assert_elm_compiles_to_erl("Union").
 
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
