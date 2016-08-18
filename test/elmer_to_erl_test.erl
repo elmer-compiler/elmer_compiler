@@ -90,6 +90,9 @@ compiles_IfElseNested_test() ->
 compiles_Union_test() ->
     assert_elm_compiles_to_erl("Union").
 
+compiles_UnionRecursive_test() ->
+    assert_elm_compiles_to_erl("UnionRecursive").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
