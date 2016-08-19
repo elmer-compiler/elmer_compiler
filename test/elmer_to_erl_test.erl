@@ -99,6 +99,9 @@ compiles_UnionParam_test() ->
 compiles_CaseUnion_test() ->
     assert_elm_compiles_to_erl("CaseUnion").
 
+compiles_CaseFanoutUnion_test() ->
+    assert_elm_compiles_to_erl("CaseFanoutUnion").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 

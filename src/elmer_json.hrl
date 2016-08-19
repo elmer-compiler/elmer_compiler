@@ -152,6 +152,9 @@
 -define(JSON_CHAIN(TestChain, Success, Failure),
         #{<<"tag">> := <<"Chain">>, <<"_success">> := Success, <<"_failure">> := Failure, <<"_testChain">> := TestChain}).
 
+-define(JSON_FANOUT(Tests, Fallback, Path),
+        #{<<"tag">> := <<"FanOut">>, <<"_tests">> := Tests, <<"_fallback">> := Fallback, <<"_path">> := Path}).
+
 -define(JSON_CASE(On, Decider, Jumps),
         #{<<"tag">> := <<"Case">>, <<"contents">> := [On, Decider, Jumps]}).
 

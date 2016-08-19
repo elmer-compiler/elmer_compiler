@@ -239,6 +239,11 @@ to_erl({'case', Var, ?JSON_CHAIN(Tests, Success, Failure), Jumps}) ->
     FailureClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Failure, Jumps)},
     {'case', ?ELINE, Var, [SuccessClause, FailureClause]};
 
+to_erl({'case', Var, ?JSON_FANOUT(TestsWithLeafs, Fallback, Path), Jumps}) ->
+    CaseClauses = [{clause, ?ELINE, [case_test_pattern([Path, Test])], [], case_leaf(Leaf, Jumps)} || [Test, Leaf] <- TestsWithLeafs],
+    FallbackClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Fallback, Jumps)},
+    {'case', ?ELINE, Var, CaseClauses ++ [FallbackClause]};
+
 to_erl({'case', _, _, _}) ->
     todo_vic.
 
