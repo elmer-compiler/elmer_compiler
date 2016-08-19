@@ -102,6 +102,9 @@ compiles_CaseUnion_test() ->
 compiles_CaseFanoutUnion_test() ->
     assert_elm_compiles_to_erl("CaseFanoutUnion").
 
+compiles_CaseInlineDataAccess_test() ->
+    assert_elm_compiles_to_erl("CaseInlineDataAccess").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 

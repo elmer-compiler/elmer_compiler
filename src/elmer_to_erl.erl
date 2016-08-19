@@ -123,8 +123,9 @@ to_erl(?JSON_DATA(Name, Fields)) ->
     {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(Name)}, {tuple, ?ELINE, [to_erl(F) || F <- Fields]}]};
 
 to_erl(?JSON_DATAACCESS(At, Index)) when is_number(Index) ->
-    Idx = {number, ?ELINE, Index + 1},
-    {call, ?ELINE, {atom, ?ELINE, element}, [Idx, {call, ?ELINE, {atom, ?ELINE, element}, [2, to_erl(At)]}]};
+    Idx = {integer, ?ELINE, Index + 1},
+    DataIdx = {integer, ?ELINE, 2},
+    {call, ?ELINE, {atom, ?ELINE, element}, [Idx, {call, ?ELINE, {atom, ?ELINE, element}, [DataIdx, to_erl(At)]}]};
 
 to_erl(?JSON_ACCESS(At, Slot)) when is_binary(Slot) ->
     {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, maps}, {atom, ?ELINE, get}}, [{atom, ?ELINE, elmer_util:btoa(Slot)}, to_erl(At)]};
@@ -244,8 +245,8 @@ to_erl({'case', Var, ?JSON_FANOUT(TestsWithLeafs, Fallback, Path), Jumps}) ->
     FallbackClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Fallback, Jumps)},
     {'case', ?ELINE, Var, CaseClauses ++ [FallbackClause]};
 
-to_erl({'case', _, _, _}) ->
-    todo_vic.
+to_erl({'case', _, Leaf = ?JSON_LEAF(_), Jumps}) ->
+    case_leaf(Leaf, Jumps).
 
 exps(B) when is_list(B) -> B;
 exps(E) -> [E].
