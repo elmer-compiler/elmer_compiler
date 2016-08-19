@@ -72,6 +72,9 @@ compiles_ConsLit_test() ->
 compiles_TupleLit_test() ->
     assert_elm_compiles_to_erl("TupleLit").
 
+compiles_TupleCons_test() ->
+    assert_elm_compiles_to_erl("TupleCons").
+
 compiles_TupleAccess_test() ->
     assert_elm_compiles_to_erl("TupleAccess").
 
