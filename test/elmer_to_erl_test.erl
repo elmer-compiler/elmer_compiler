@@ -72,6 +72,9 @@ compiles_ConsLit_test() ->
 compiles_TupleLit_test() ->
     assert_elm_compiles_to_erl("TupleLit").
 
+compiles_TupleAccess_test() ->
+    assert_elm_compiles_to_erl("TupleAccess").
+
 compiles_DefFun_test() ->
     assert_elm_compiles_to_erl("DefFun").
 
@@ -95,6 +98,9 @@ compiles_UnionRecursive_test() ->
 
 compiles_UnionParam_test() ->
     assert_elm_compiles_to_erl("UnionParam").
+
+compiles_UnionAcess_test() ->
+    assert_elm_compiles_to_erl("UnionAccess").
 
 compiles_CaseUnion_test() ->
     assert_elm_compiles_to_erl("CaseUnion").
