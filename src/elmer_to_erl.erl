@@ -233,9 +233,9 @@ to_erl({ifelse, Cond, Then, Else}) ->
     ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
     {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
 
-to_erl({'case', Var, ?JSON_CHAIN([Test], Success, Failure), Jumps}) ->
-    CaseTest = case_test_pattern(Test),
-    SuccessClause = {clause, ?ELINE, [CaseTest], [], case_leaf(Success, Jumps)},
+to_erl({'case', Var, ?JSON_CHAIN(Tests, Success, Failure), Jumps}) ->
+    CasePatterns = [case_test_pattern(Test) || Test <- Tests],
+    SuccessClause = {clause, ?ELINE, CasePatterns, [], case_leaf(Success, Jumps)},
     FailureClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Failure, Jumps)},
     {'case', ?ELINE, Var, [SuccessClause, FailureClause]};
 
