@@ -138,11 +138,10 @@ to_erl(?JSON_LET(Defs, Body)) ->
 to_erl(?JSON_IF(Conds, Else)) ->
     to_erl({ifelse, Conds, Else});
 
-to_erl(?JSON_CASE(_Name, _Decider, _JumpsAry)) ->
-    %% Jumps = jumps_proplist(JumpsAry),
-    %% Var = {var, ?ELINE, elmer_util:btoa(Name)},
-    %% case_erl(Var, Decider, Jumps);
-    {atom, ?ELINE, todo_vic};
+to_erl(?JSON_CASE(VarName, Decider, Jumps)) ->
+    JumpsProplist = jumps_proplist(Jumps),
+    Var = {var, ?ELINE, elmer_util:var(VarName)},
+    to_erl({'case', Var, Decider, JumpsProplist});
 
 %% Optimize anonymous functions that just call a binop with
 %% same exact arguments.
@@ -232,8 +231,41 @@ to_erl({ifelse, [[CondA, ThenA] | Conds], Else}) ->
 to_erl({ifelse, Cond, Then, Else}) ->
     ThenClause = {clause, ?ELINE, [{atom, 0, true}], [], exps(to_erl(Then))},
     ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
-    {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]}.
+    {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
+
+to_erl({'case', Var, ?JSON_CHAIN([Test], Success, Failure), Jumps}) ->
+    CaseTest = case_test_pattern(Test),
+    SuccessClause = {clause, ?ELINE, [CaseTest], [], case_leaf(Success, Jumps)},
+    FailureClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Failure, Jumps)},
+    {'case', ?ELINE, Var, [SuccessClause, FailureClause]};
+
+to_erl({'case', _, _, _}) ->
+    todo_vic.
 
 exps(B) when is_list(B) -> B;
 exps(E) -> [E].
 
+jumps_proplist(List) -> jumps_proplist(List, []).
+jumps_proplist([], Acc) -> Acc;
+jumps_proplist([[Key, Value] | Rest], Acc) ->
+    jumps_proplist(Rest, [{Key, Value}] ++ Acc).
+
+case_leaf(?JSON_LEAF_INLINE(Body), _Jumps) ->
+    exps(to_erl(Body));
+
+case_leaf(_, _Jumps) ->
+    todo_vic.
+
+case_test_pattern([Position, Pattern]) ->
+   case_at_position(Position, case_pattern(Pattern)).
+
+case_at_position(?JSON_EMPTY, Pattern) ->
+    Pattern;
+
+case_at_position(_, _Pattern) ->
+    todo_vic.
+
+
+%% match a data constructor name
+case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(DataName, _))) ->
+    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(DataName)}, {var, ?ELINE, '_'}]}.
