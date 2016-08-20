@@ -13,8 +13,8 @@
 isBar() ->
     elmer_runtime:partial(fun (V_foo) ->
                                   V__p0 = V_foo,
-                                  case V__p0 of
-                                      {'Bar', _} -> true;
+                                  case {V__p0} of
+                                      {{'Bar', _}} -> true;
                                        _ -> false
                                   end
                           end, 1).

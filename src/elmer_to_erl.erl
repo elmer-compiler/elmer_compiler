@@ -8,7 +8,7 @@
 %% TODO: make elm-compiler export line numbers.
 -define(ELINE, 0).
 
--define(ELMER_PARTIAL(Fun, Arity), 
+-define(ELMER_PARTIAL(Fun, Arity),
         {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, elmer_runtime},
                         {atom, ?ELINE, partial}},
          [Fun, {integer, ?ELINE, Arity}]}).
@@ -110,14 +110,20 @@ to_erl(?JSON_DATA(Name, Fields)) ->
     {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(Name)}, {tuple, ?ELINE, [to_erl(F) || F <- Fields]}]};
 
 to_erl(?JSON_DATAACCESS(At, Index)) when is_number(Index) ->
+    to_erl({access, to_erl(At), Index});
+
+to_erl({access, At, Index}) when is_number(Index) ->
     Idx = {integer, ?ELINE, Index + 1},
     DataIdx = {integer, ?ELINE, 2},
-    {call, ?ELINE, {atom, ?ELINE, element}, [Idx, {call, ?ELINE, {atom, ?ELINE, element}, [DataIdx, to_erl(At)]}]};
+    {call, ?ELINE, {atom, ?ELINE, element}, [Idx, {call, ?ELINE, {atom, ?ELINE, element}, [DataIdx, At]}]};
 
 to_erl(?JSON_ACCESS(At, Slot)) when is_binary(Slot) ->
     {call, ?ELINE, {remote, ?ELINE, {atom, ?ELINE, maps}, {atom, ?ELINE, get}}, [{atom, ?ELINE, elmer_util:btoa(Slot)}, to_erl(At)]};
 
 to_erl(?JSON_LOCALVAR(Name)) ->
+    to_erl({var, Name});
+
+to_erl({var, Name}) ->
     {var, ?ELINE, elmer_util:var(Name)};
 
 to_erl(?JSON_LET(Defs, Body)) ->
@@ -128,8 +134,7 @@ to_erl(?JSON_IF(Conds, Else)) ->
 
 to_erl(?JSON_CASE(VarName, Decider, Jumps)) ->
     JumpsProplist = jumps_proplist(Jumps),
-    Var = {var, ?ELINE, elmer_util:var(VarName)},
-    to_erl({'case', Var, Decider, JumpsProplist});
+    to_erl({'case', to_erl({var, VarName}), Decider, JumpsProplist});
 
 %% Optimize anonymous functions that just call a binop with
 %% same exact arguments.
@@ -221,19 +226,13 @@ to_erl({ifelse, Cond, Then, Else}) ->
     ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
     {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
 
-to_erl({'case', Var, ?JSON_CHAIN(Tests, Success, Failure), Jumps}) ->
-    CasePatterns = [case_test_pattern(Test) || Test <- Tests],
-    SuccessClause = {clause, ?ELINE, CasePatterns, [], case_leaf(Success, Jumps)},
-    FailureClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Failure, Jumps)},
-    {'case', ?ELINE, Var, [SuccessClause, FailureClause]};
+to_erl({'case', Var, Leaf = ?JSON_LEAF(_), Jumps}) ->
+    case_leaf(Var, Leaf, Jumps);
 
-to_erl({'case', Var, ?JSON_FANOUT(TestsWithLeafs, Fallback, Path), Jumps}) ->
-    CaseClauses = [{clause, ?ELINE, [case_test_pattern([Path, Test])], [], case_leaf(Leaf, Jumps)} || [Test, Leaf] <- TestsWithLeafs],
-    FallbackClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Fallback, Jumps)},
-    {'case', ?ELINE, Var, CaseClauses ++ [FallbackClause]};
+to_erl({'case', Var, Decider, Jumps}) ->
+    {Context, Clauses} = case_clauses(Var, Decider, Jumps),
+    {'case', ?ELINE, Context, Clauses}.
 
-to_erl({'case', _, Leaf = ?JSON_LEAF(_), Jumps}) ->
-    case_leaf(Leaf, Jumps).
 
 exps(B) when is_list(B) -> B;
 exps(E) -> [E].
@@ -243,22 +242,42 @@ jumps_proplist([], Acc) -> Acc;
 jumps_proplist([[Key, Value] | Rest], Acc) ->
     jumps_proplist(Rest, [{Key, Value}] ++ Acc).
 
-case_leaf(?JSON_LEAF_INLINE(Body), _Jumps) ->
+case_clauses(Var, ?JSON_CHAIN(PathsAndPatterns, Success, Failure), Jumps) ->
+    Context = {tuple, ?ELINE, [value_at_position(Path, Var) || [Path, _] <- PathsAndPatterns]},
+    Pattern = {tuple, ?ELINE, [case_pattern(Pattern) || [_, Pattern] <- PathsAndPatterns]},
+    SuccessClause = {clause, ?ELINE, [Pattern], [], case_leaf(Var, Success, Jumps)},
+    FailureClause = {clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Var, Failure, Jumps)},
+    Clauses = [SuccessClause, FailureClause],
+    {Context, Clauses};
+
+case_clauses(Var, ?JSON_FANOUT(TestsWithLeafs, Fallback, Path), Jumps) ->
+    Context = value_at_position(Path, Var),
+    Clauses = [{clause, ?ELINE, [case_pattern(Pattern)], [], case_leaf(Var, Leaf, Jumps)} || [Pattern, Leaf] <- TestsWithLeafs],
+    FallbackClauses = [{clause, ?ELINE, [{var, ?ELINE, '_'}], [], case_leaf(Var, Fallback, Jumps)}],
+    {Context, Clauses ++ FallbackClauses}.
+
+case_leaf(_Var, ?JSON_LEAF(?JSON_INLINE(Body)), _Jumps) ->
     exps(to_erl(Body));
 
-case_leaf(_, _Jumps) ->
-    todo_vic.
+case_leaf(_Var, ?JSON_LEAF(?JSON_JUMP(Jump)), Jumps) ->
+    exps(to_erl(proplists:get_value(Jump, Jumps)));
 
-case_test_pattern([Position, Pattern]) ->
-   case_at_position(Position, case_pattern(Pattern)).
+case_leaf(Var, Chain = ?JSON_CHAIN(_, _, _), Jumps) ->
+    exps(to_erl({'case', Var, Chain, Jumps}));
 
-case_at_position(?JSON_EMPTY, Pattern) ->
-    Pattern;
+case_leaf(Var, Fanout = ?JSON_FANOUT(_, _, _), Jumps) ->
+    exps(to_erl({'case', Var, Fanout, Jumps})).
 
-case_at_position(_, _Pattern) ->
-    todo_vic.
+value_at_position(?JSON_EMPTY, Value) ->
+    Value;
 
+value_at_position(?JSON_POSITION(Position, NextPosition), Value) ->
+    value_at_position(NextPosition, to_erl({access, Value, Position})).
 
 %% match a data constructor name
 case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(DataName, _))) ->
-    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(DataName)}, {var, ?ELINE, '_'}]}.
+    {tuple, ?ELINE, [{atom, ?ELINE, elmer_util:btoa(DataName)}, {var, ?ELINE, '_'}]};
+
+case_pattern(Lit = ?JSON_LIT(_)) ->
+    to_erl(Lit).
+

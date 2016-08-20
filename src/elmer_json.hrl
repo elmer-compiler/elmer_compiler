@@ -143,12 +143,6 @@
 -define(JSON_LEAF(Content),
         #{<<"tag">> := <<"Leaf">>, <<"contents">> := Content}).
 
--define(JSON_LEAF_INLINE(Content),
-        ?JSON_LEAF(?JSON_INLINE(Content))).
-
--define(JSON_LEAF_JUMP(Content),
-        ?JSON_LEAF(?JSON_JUMP(Content))).
-
 -define(JSON_CHAIN(TestChain, Success, Failure),
         #{<<"tag">> := <<"Chain">>, <<"_success">> := Success, <<"_failure">> := Failure, <<"_testChain">> := TestChain}).
 

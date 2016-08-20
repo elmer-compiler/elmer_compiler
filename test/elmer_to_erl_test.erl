@@ -108,6 +108,9 @@ compiles_UnionAcess_test() ->
 compiles_CaseUnion_test() ->
     assert_elm_compiles_to_erl("CaseUnion").
 
+compiles_CaseUnionParams_test() ->
+    assert_elm_compiles_to_erl("CaseUnionParams").
+
 compiles_CaseFanoutUnion_test() ->
     assert_elm_compiles_to_erl("CaseFanoutUnion").
 
