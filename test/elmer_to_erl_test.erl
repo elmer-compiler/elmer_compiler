@@ -108,11 +108,14 @@ compiles_UnionAcess_test() ->
 compiles_CaseUnion_test() ->
     assert_elm_compiles_to_erl("CaseUnion").
 
+compiles_CaseFanoutUnion_test() ->
+    assert_elm_compiles_to_erl("CaseFanoutUnion").
+
 compiles_CaseUnionParams_test() ->
     assert_elm_compiles_to_erl("CaseUnionParams").
 
-compiles_CaseFanoutUnion_test() ->
-    assert_elm_compiles_to_erl("CaseFanoutUnion").
+compiles_CaseUnionPosition_test() ->
+    assert_elm_compiles_to_erl("CaseUnionPosition").
 
 compiles_CaseInlineDataAccess_test() ->
     assert_elm_compiles_to_erl("CaseInlineDataAccess").
