@@ -120,6 +120,9 @@ compiles_CaseUnionPosition_test() ->
 compiles_CaseInlineDataAccess_test() ->
     assert_elm_compiles_to_erl("CaseInlineDataAccess").
 
+compiles_RecordLit_test() ->
+    assert_elm_compiles_to_erl("RecordLit").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
