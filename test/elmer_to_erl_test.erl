@@ -138,6 +138,12 @@ compiles_RecordTypeAlias_test() ->
 compiles_AnonFun_test() ->
     assert_elm_compiles_to_erl("AnonFun").
 
+
+runs_AnonFun_test() ->
+    compile:file("./files/Elm.AnonFun.erl"),
+    Result = ('Elm.AnonFun':anon())([3]),
+    ?assertEqual(6, Result).
+
 compiles_FwdFunApplication_test() ->
     assert_elm_compiles_to_erl("FwdFunApplication").
 
