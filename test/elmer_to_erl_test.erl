@@ -135,6 +135,9 @@ compiles_RecordPattern_test() ->
 compiles_RecordTypeAlias_test() ->
     assert_elm_compiles_to_erl("RecordTypeAlias").
 
+compiles_AnonFun_test() ->
+    assert_elm_compiles_to_erl("AnonFun").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
