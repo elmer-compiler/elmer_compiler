@@ -129,6 +129,9 @@ compiles_RecordAccess_test() ->
 compiles_RecordUpdate_test() ->
     assert_elm_compiles_to_erl("RecordUpdate").
 
+compiles_RecordPattern_test() ->
+    assert_elm_compiles_to_erl("RecordPattern").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
