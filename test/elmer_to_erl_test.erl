@@ -123,6 +123,9 @@ compiles_CaseInlineDataAccess_test() ->
 compiles_RecordLit_test() ->
     assert_elm_compiles_to_erl("RecordLit").
 
+compiles_RecordAccess_test() ->
+    assert_elm_compiles_to_erl("RecordAccess").
+
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
