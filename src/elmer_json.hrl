@@ -47,7 +47,7 @@
         #{ <<"tag">> := <<"Local">> }).
 
 -define(JSON_EMPTY,
-        #{ <<"tag">> := <<"Empty">>, <<"contents">> := [] }).
+        #{ <<"tag">> := <<"Empty">> }).
 
 -define(JSON_POSITION(Pos, Content),
         #{<<"tag">> := <<"Position">>, <<"contents">> := [Position, Content]}).
