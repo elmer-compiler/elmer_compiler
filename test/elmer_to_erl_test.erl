@@ -102,7 +102,7 @@ compiles_UnionRecursive_test() ->
 compiles_UnionParam_test() ->
     assert_elm_compiles_to_erl("UnionParam").
 
-compiles_UnionAcess_test() ->
+compiles_UnionAccess_test() ->
     assert_elm_compiles_to_erl("UnionAccess").
 
 compiles_CaseUnion_test() ->
@@ -137,6 +137,12 @@ compiles_RecordTypeAlias_test() ->
 
 compiles_AnonFun_test() ->
     assert_elm_compiles_to_erl("AnonFun").
+
+compiles_FwdFunApplication_test() ->
+    assert_elm_compiles_to_erl("FwdFunApplication").
+
+compiles_BwdFunApplication_test() ->
+    assert_elm_compiles_to_erl("BwdFunApplication").
 
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
