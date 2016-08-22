@@ -60,6 +60,10 @@ dump(erlsrc, Filename, Erl) ->
     Bin = erlang:iolist_to_binary(Src),
     {Filename, Bin};
 
+dump(binary, Filename, Erl) ->
+    Bin = compile:forms(Erl, [report_errors, report_warnings]),
+    {Filename, Bin};
+
 dump(stdout, Filename, Erl) ->
     io:format("-----~n|~s~n-----~n~s~n", [
                                           Filename,
