@@ -40,11 +40,6 @@ elm_compile_module(ElmModuleName, Format) ->
 elm_absform_module(ElmModuleName) ->
     elm_compile_module(ElmModuleName, absform).
 
-elm_load_module(ElmModuleName) ->
-    {ok, Module, CompiledBinary} = elm_compile_module(ElmModuleName, binary),
-    {module, Module} = code:load_binary(Module, ElmModuleName, CompiledBinary),
-    Module.
-
 
 assert_elm_compiles_to_erl(ElmModuleName) ->
     CompiledForms = reset_forms_line(elm_absform_module(ElmModuleName)),

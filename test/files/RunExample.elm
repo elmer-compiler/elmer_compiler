@@ -1,4 +1,4 @@
 module RunExample exposing (greet)
 
-greet =
-    "Howdy"
+greet name =
+    "Howdy, " ++ name
