@@ -1,4 +1,4 @@
--module(run_elmer_test).
+-module(native_elmer_test).
 
 -ifdef(TEST).
 
@@ -7,11 +7,6 @@
 -define(ELINE, 0).
 -define(USER_BUILD_DIR, "elm-stuff/build-artifacts/0.17.1/user/project/1.0.0").
 -define(CORE_BUILD_DIR, "elm-stuff/build-artifacts/0.17.1/elm-lang/core/4.0.5").
-
-erl_parse_file(ElmoModuleName) ->
-    ErlFile = "test/files/Elm." ++ ElmoModuleName ++ ".erl",
-    {ok, Forms} = epp:parse_file(ErlFile, []),
-    Forms.
 
 on_cwd(Cwd, Fun) ->
     {ok, OldDir} = file:get_cwd(),
@@ -32,21 +27,11 @@ user_build_filepath(ElmModuleName) ->
 core_build_filepath(ElmModuleName) ->
     ?CORE_BUILD_DIR ++ "/" ++ ElmModuleName ++ ".elmo".
 
-elm_compile_module(ElmModuleName, Format) ->
-    Compiled = elm_compile(ElmModuleName, Format),
-    ElmoFileName = user_build_filepath(ElmModuleName),
-    proplists:get_value(ElmoFileName, Compiled, elm_not_compiled).
-
-elm_load_module(ElmModuleName) ->
-    {ok, Module, CompiledBinary} = elm_compile_module(ElmModuleName, binary),
-    {module, Module} = code:load_binary(Module, ElmModuleName, CompiledBinary),
-    Module.
-
 elm_load_module(ElmModuleName, CoreModuleName) ->
     Compiled = elm_compile(ElmModuleName, binary),
     UserElmoFileName = user_build_filepath(ElmModuleName),
     {ok, Module, CompiledBinary} = proplists:get_value(UserElmoFileName, Compiled, elm_not_compiled),
-
+    {module, Module} = code:load_binary(Module, ElmModuleName, CompiledBinary),
     %% TODO Resolve many core module dependencies
     CoreElmoFileName = core_build_filepath(CoreModuleName),
     {ok, CoreModule, CoreCompiledBinary} = proplists:get_value(CoreElmoFileName, Compiled, elm_not_compiled),
@@ -56,6 +41,7 @@ elm_load_module(ElmModuleName, CoreModuleName) ->
 runs_RunExample_test() ->
     elm_load_module("RunExample", "Basics"),
     %% TODO Figure out where to put Native modules
+    %% TODO Namespace loaded modules to 'Elm.ModuleName'
     Result = ('Elm.RunExample':greet())([<<"doodie">>]),
     ?assertEqual(<<"Howdy, doodie">>, Result).
 
