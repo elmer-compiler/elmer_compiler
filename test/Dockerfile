@@ -1,3 +1,4 @@
-FROM     vborja/elmer-json-compiler:0.17.1
-COPY     . /elmer_compiler/
+FROM     elmerc/elmer-json-compiler:17.0.1-1aab2f8
+COPY     ./repo /elmer_compiler/
 WORKDIR  /elmer_compiler/
+CMD      ["rebar3", "eunit"]

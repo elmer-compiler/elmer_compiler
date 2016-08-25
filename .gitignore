@@ -17,3 +17,4 @@ logs
 _build
 _checkouts
 test/files/elm-stuff/
+test/repo

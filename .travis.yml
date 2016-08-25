@@ -6,6 +6,7 @@ language:
 otp_release:
   - 18.0
 install:
-  - docker build -t elm_compiler/test test/
+  - git --git-dir=/dev/null clone --depth=1 file://$PWD test/repo
+  - docker build -t elmer_compiler/test test/
 script:
-  - docker run elmer_compiler/test /bin/sh -c 'cd elm_compiler && rebar3 eunit'
+  - docker run elmer_compiler/test
