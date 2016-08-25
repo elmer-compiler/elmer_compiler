@@ -43,7 +43,9 @@ runs_RunExample_test() ->
     %% TODO Figure out where to put Native modules
     %% TODO Namespace loaded modules to 'Elm.ModuleName'
     Result = ('Elm.RunExample':greet())([<<"doodie">>]),
-    ?assertEqual(<<"Howdy, doodie">>, Result).
+    ?assertEqual(<<"Howdy, doodie">>, Result),
+    Result2 = ('Elm.Native.Utils':append())([[1,2],[3,4]]),
+    ?assertEqual([1,2,3,4], Result2).
 
 -endif. %%  TEST
 
