@@ -67,8 +67,8 @@
 -define(JSON_DEF_FROM_MOD(Name, Var, Module, Package),
         ?JSON_DEF(Name, ?JSON_MODVAR(Var, Module, Package))).
 
--define(JSON_TAILDEF(Name, Content),
-        #{ <<"tag">> := <<"TailDef">>, <<"contents">> := [_, Name, _, Content]}).
+-define(JSON_TAILDEF(Name, Args, Content),
+        #{ <<"tag">> := <<"TailDef">>, <<"contents">> := [_, Name, Args, Content]}).
 
 -define(JSON_CONSTRUCTOR(Content), 
         #{ <<"tag">> := <<"Constructor">>, <<"contents">> := Content}).
@@ -111,6 +111,10 @@
 -define(JSON_CALL(Fun, Args),
         #{ <<"tag">> := <<"Call">>,
            <<"contents">> := [Fun, Args]}).
+
+-define(JSON_TAILCALL(Fun, Args),
+        #{ <<"tag">> := <<"TailCall">>,
+           <<"contents">> := [Fun, _, Args]}).
 
 %% We can inline anonymous functions that just
 %% delegate all of its arguments to a binop

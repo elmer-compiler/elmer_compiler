@@ -86,9 +86,12 @@ compile(?JSON_DEF(Name, Value), Elmo = #elmo{ defs = Defs }) ->
     Def = to_erl({def, Name, to_erl(Value)}),
     Elmo#elmo{ defs = [Def | Defs]};
 
-compile(?JSON_TAILDEF(_,_),
-        Elmo = #elmo{ })->
-    Elmo.
+compile(?JSON_TAILDEF(Name, Args, Content), Elmo = #elmo{ defs = Defs })->
+    VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
+    Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
+    Def = to_erl({def, Name, ?ELMER_PARTIAL(Fun, length(Args))}),
+    Elmo#elmo{ defs = [Def | Defs]}.
+
 
 %%
 % to_erl/1 -- Transform Elm JSON-AST program to Abstract Erlang
@@ -157,6 +160,9 @@ to_erl(?JSON_REF(Name, ?JSON_TOPLEVEL)) ->
 
 to_erl(?JSON_CALL(Fun, Args)) ->
     {call, ?ELINE, to_erl(Fun), [to_erl({cons, Args})]};
+
+to_erl(?JSON_TAILCALL(Fun, Args)) ->
+    {call, ?ELINE, {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Fun)}, []}, [to_erl({cons, Args})]};
 
 to_erl(?JSON_TOPLVAR(Name)) ->
     {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};

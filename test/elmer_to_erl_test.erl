@@ -147,5 +147,8 @@ compiles_BwdFunApplication_test() ->
 compiles_ImportExposing_testPending() ->
     assert_elm_compiles_to_erl("ImportExposing").
 
+compiles_TailDef_test() ->
+    assert_elm_compiles_to_erl("TailDef").
+
 -endif. %%  TEST
 
