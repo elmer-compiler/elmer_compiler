@@ -130,11 +130,7 @@ to_erl({var, Name}) ->
     {var, ?ELINE, elmer_util:var(Name)};
 
 to_erl(?JSON_LET(Defs, Body)) ->
-    [
-     {match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, 
-      to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs
-    ] ++ exps(to_erl(Body));
-
+    [match_expr(Def) || Def <- Defs] ++ exps(to_erl(Body));
 
 to_erl(?JSON_IF(Conds, Else)) ->
     to_erl({ifelse, Conds, Else});
@@ -296,4 +292,12 @@ case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(DataName, _))) ->
 
 case_pattern(Lit = ?JSON_LIT(_)) ->
     to_erl(Lit).
+
+match_expr(?JSON_DEF(Name, Val)) ->
+    {match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)};
+
+match_expr(?JSON_TAILDEF(Name, Args, Content)) ->
+    VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
+    Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
+    {match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, ?ELMER_PARTIAL(Fun, length(Args))}.
 

@@ -1,6 +1,6 @@
 -module(elmer_to_erl_test).
 
--ifdef(false).
+-ifdef(TEST).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -142,6 +142,9 @@ compiles_RecordTypeAlias_test() ->
 
 compiles_AnonFun_test() ->
     assert_elm_compiles_to_erl("AnonFun").
+
+compiles_LetInTailDef_test() ->
+    assert_elm_compiles_to_erl("LetInTailDef").
 
 compiles_FwdFunApplication_test() ->
     assert_elm_compiles_to_erl("FwdFunApplication").
