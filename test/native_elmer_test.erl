@@ -28,7 +28,7 @@ core_build_filepath(ElmModuleName) ->
     ?CORE_BUILD_DIR ++ "/" ++ ElmModuleName ++ ".elmo".
 
 elm_load_module(ElmModuleName, CoreModuleName) ->
-    Compiled = elm_compile(ElmModuleName, binary),
+    Compiled = elm_compile(ElmModuleName, {beam, "build"}),
     UserElmoFileName = user_build_filepath(ElmModuleName),
     {ok, Module, CompiledBinary} = proplists:get_value(UserElmoFileName, Compiled, elm_not_compiled),
     {module, Module} = code:load_binary(Module, ElmModuleName, CompiledBinary),
@@ -41,7 +41,6 @@ elm_load_module(ElmModuleName, CoreModuleName) ->
 runs_RunExample_test() ->
     elm_load_module("RunExample", "Basics"),
     %% TODO Figure out where to put Native modules
-    %% TODO Namespace loaded modules to 'Elm.ModuleName'
     Result = ('Elm.RunExample':greet())([<<"doodie">>]),
     ?assertEqual(<<"Howdy, doodie">>, Result),
     Result2 = ('Elm.Native.Utils':append())([[1,2],[3,4]]),

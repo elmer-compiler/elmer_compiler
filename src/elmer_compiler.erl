@@ -52,20 +52,28 @@ compile_elmo_file(ElmoFile, Output) ->
     Erl = elmer_to_erl:from_file(ElmoFile),
     dump(Output, ElmoFile, Erl).
 
-dump(absform, Filename, Erl) ->
-    {Filename, Erl};
+dump(absform, ElmoFile, Erl) ->
+    {ElmoFile, Erl};
 
-dump(erlsrc, Filename, Erl) ->
+dump(erlsrc, ElmoFile, Erl) ->
     Src = lists:map(fun erl_pp:form/1, Erl),
     Bin = erlang:iolist_to_binary(Src),
-    {Filename, Bin};
+    {ElmoFile, Bin};
 
-dump(binary, Filename, Erl) ->
-    Bin = compile:forms(Erl, [report_errors, report_warnings]),
-    {Filename, Bin};
+dump({beam, OutputDir}, ElmoFile, Erl) ->
+    io:format("~s~n", [ElmoFile]),
+    %% io:format("~p~n", [Erl]),
+    {ok, Module, Bin} = compile:forms(Erl, [report_errors, report_warnings]),
+    %% OutputFilename = filename:basename(ElmoFile, ".elmo") ++ ".beam",
+    OutputFilename = filename:basename(ElmoFile, ".elmo") ++ ".beam",
+    OutputFilepath = filename:join(filename:absname(OutputDir), OutputFilename),
+    io:format("~s~n", [OutputFilepath]),
+    io:format("~s~n", [Module]),
+    ok = file:write_file(OutputFilepath, io_lib:fwrite("~p.\n", [Bin])),
+    {ElmoFile, Bin};
 
-dump(stdout, Filename, Erl) ->
+dump(stdout, ElmoFile, Erl) ->
     io:format("-----~n|~s~n-----~n~s~n", [
-                                          Filename,
+                                          ElmoFile,
                                           lists:concat(lists:map(fun erl_pp:form/1, Erl))]).
 

@@ -86,7 +86,7 @@ compile(?JSON_DEF(Name, Value), Elmo = #elmo{ defs = Defs }) ->
     Def = to_erl({def, Name, to_erl(Value)}),
     Elmo#elmo{ defs = [Def | Defs]};
 
-compile(?JSON_TAILDEF(Name, Args, Content), Elmo = #elmo{ defs = Defs })->
+compile(?JSON_TAILDEF(Name, Args, Content), Elmo = #elmo{ defs = Defs }) ->
     VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
     Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
     Def = to_erl({def, Name, ?ELMER_PARTIAL(Fun, length(Args))}),

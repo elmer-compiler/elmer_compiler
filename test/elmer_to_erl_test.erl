@@ -155,10 +155,5 @@ compiles_ImportExposing_testPending() ->
 compiles_TailDef_test() ->
     assert_elm_compiles_to_erl("TailDef").
 
-runs_RunExample_test() ->
-    elm_load_module("RunExample"),
-    Result = 'Elm.RunExample':greet(),
-    ?assertEqual(<<"Howdy">>, Result).
-
 -endif. %%  TEST
 
