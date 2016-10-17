@@ -27,23 +27,28 @@ on_cwd(Cwd, Fun) ->
         ok = file:set_cwd(OldDir)
     end.
 
-elm_compile(ElmModuleName) ->
+elm_compile(ElmModuleName, Format) ->
     ElmFileName = ElmModuleName ++ ".elm",
-    on_cwd("test/files", fun () -> elmer_compiler:compile([ElmFileName], absform, []) end).
+    on_cwd("test/files", fun () -> elmer_compiler:compile([ElmFileName], Format, []) end).
 
-elm_compile_module(ElmModuleName) ->
+
+elm_compile_module(ElmModuleName, Format) ->
     ElmoFileName = ?BUILD_DIR ++ "/" ++ ElmModuleName ++ ".elmo",
-    Compiled = elm_compile(ElmModuleName),
+    Compiled = elm_compile(ElmModuleName, Format),
     proplists:get_value(ElmoFileName, Compiled, elm_not_compiled).
 
+elm_absform_module(ElmModuleName) ->
+    elm_compile_module(ElmModuleName, absform).
+
+
 assert_elm_compiles_to_erl(ElmModuleName) ->
-    CompiledForms = reset_forms_line(elm_compile_module(ElmModuleName)),
+    CompiledForms = reset_forms_line(elm_absform_module(ElmModuleName)),
     %% Ignore file attribute from expected erl code. (TODO: fix when we have original elm file name)
     [{attribute, _, file, _} | ExpectedForms ] = reset_forms_line(erl_parse_file(ElmModuleName)),
     ?assertEqual(ExpectedForms, CompiledForms).
 
 does_not_compile_Invalid_test() ->
-    ?assertEqual(error, elm_compile("Invalid")).
+    ?assertEqual(error, elm_compile("Invalid", absform)).
 
 compiles_StringLit_test() ->
     assert_elm_compiles_to_erl("StringLit").
@@ -137,6 +142,9 @@ compiles_RecordTypeAlias_test() ->
 
 compiles_AnonFun_test() ->
     assert_elm_compiles_to_erl("AnonFun").
+
+compiles_LetInTailDef_test() ->
+    assert_elm_compiles_to_erl("LetInTailDef").
 
 compiles_FwdFunApplication_test() ->
     assert_elm_compiles_to_erl("FwdFunApplication").

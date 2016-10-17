@@ -86,7 +86,7 @@ compile(?JSON_DEF(Name, Value), Elmo = #elmo{ defs = Defs }) ->
     Def = to_erl({def, Name, to_erl(Value)}),
     Elmo#elmo{ defs = [Def | Defs]};
 
-compile(?JSON_TAILDEF(Name, Args, Content), Elmo = #elmo{ defs = Defs })->
+compile(?JSON_TAILDEF(Name, Args, Content), Elmo = #elmo{ defs = Defs }) ->
     VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
     Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
     Def = to_erl({def, Name, ?ELMER_PARTIAL(Fun, length(Args))}),
@@ -130,7 +130,7 @@ to_erl({var, Name}) ->
     {var, ?ELINE, elmer_util:var(Name)};
 
 to_erl(?JSON_LET(Defs, Body)) ->
-    [{match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs] ++ exps(to_erl(Body));
+    [match_expr(Def) || Def <- Defs] ++ exps(to_erl(Body));
 
 to_erl(?JSON_IF(Conds, Else)) ->
     to_erl({ifelse, Conds, Else});
@@ -156,16 +156,22 @@ to_erl(?JSON_REF(Name, ?JSON_MODULE(Module, Package))) ->
     to_erl({call, {Name, Module, Package}, []});
 
 to_erl(?JSON_REF(Name, ?JSON_TOPLEVEL)) ->
-    {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};
+    NameAtom = {atom, ?ELINE, elmer_util:btoa(Name)},
+    ModuleAtom = {atom, ?ELINE, '?MODULE'},
+    {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, []};
 
 to_erl(?JSON_CALL(Fun, Args)) ->
     {call, ?ELINE, to_erl(Fun), [to_erl({cons, Args})]};
 
 to_erl(?JSON_TAILCALL(Fun, Args)) ->
-    {call, ?ELINE, {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Fun)}, []}, [to_erl({cons, Args})]};
+    ModuleAtom = {atom, ?ELINE, '?MODULE'},
+    NameAtom = {atom, ?ELINE, elmer_util:btoa(Fun)},
+    {call, ?ELINE, {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, []}, [to_erl({cons, Args})]};
 
 to_erl(?JSON_TOPLVAR(Name)) ->
-    {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};
+    NameAtom = {atom, ?ELINE, elmer_util:btoa(Name)},
+    ModuleAtom = {atom, ?ELINE, '?MODULE'},
+    {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, []};
 
 to_erl(?JSON_MODVAR(Name, Module, Package)) ->
     to_erl({call, {Name, Module, Package}, []});
@@ -229,7 +235,7 @@ to_erl({ifelse, [[CondA, ThenA] | Conds], Else}) ->
 
 to_erl({ifelse, Cond, Then, Else}) ->
     ThenClause = {clause, ?ELINE, [{atom, 0, true}], [], exps(to_erl(Then))},
-    ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
+    ElseClause = {clause, ?ELINE, [{var, 0, '_'}], [], exps(to_erl(Else)) },
     {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
 
 to_erl({'case', Var, Leaf = ?JSON_LEAF(_), Jumps}) ->
@@ -286,4 +292,12 @@ case_pattern(?JSON_CONSTRUCTOR(?JSON_REF(DataName, _))) ->
 
 case_pattern(Lit = ?JSON_LIT(_)) ->
     to_erl(Lit).
+
+match_expr(?JSON_DEF(Name, Val)) ->
+    {match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)};
+
+match_expr(?JSON_TAILDEF(Name, Args, Content)) ->
+    VArgs = [{var, ?ELINE, elmer_util:var(A)} || A <- Args],
+    Fun = {'fun', ?ELINE, {clauses, [{clause, ?ELINE, VArgs, [], exps(to_erl(Content))}]}},
+    {match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, ?ELMER_PARTIAL(Fun, length(Args))}.
 
