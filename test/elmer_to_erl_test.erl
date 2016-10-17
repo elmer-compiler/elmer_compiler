@@ -1,6 +1,6 @@
 -module(elmer_to_erl_test).
 
--ifdef(TEST).
+-ifdef(false).
 
 -include_lib("eunit/include/eunit.hrl").
 

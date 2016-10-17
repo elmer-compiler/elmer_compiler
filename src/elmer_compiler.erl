@@ -63,14 +63,20 @@ dump(erlsrc, ElmoFile, Erl) ->
 dump({beam, OutputDir}, ElmoFile, Erl) ->
     io:format("~s~n", [ElmoFile]),
     %% io:format("~p~n", [Erl]),
-    {ok, Module, Bin} = compile:forms(Erl, [report_errors, report_warnings]),
-    %% OutputFilename = filename:basename(ElmoFile, ".elmo") ++ ".beam",
-    OutputFilename = filename:basename(ElmoFile, ".elmo") ++ ".beam",
-    OutputFilepath = filename:join(filename:absname(OutputDir), OutputFilename),
-    io:format("~s~n", [OutputFilepath]),
-    io:format("~s~n", [Module]),
-    ok = file:write_file(OutputFilepath, io_lib:fwrite("~p.\n", [Bin])),
-    {ElmoFile, Bin};
+    case compile:forms(Erl, [report_errors, report_warnings, return_errors]) of
+        {ok, Module, Bin}  ->
+             %% OutputFilename = filename:basename(ElmoFile, ".elmo") ++ ".beam",
+             OutputFilename = filename:basename(ElmoFile, ".elmo") ++ ".beam",
+             OutputFilepath = filename:join(filename:absname(OutputDir), OutputFilename),
+             io:format("~s~n", [OutputFilepath]),
+             io:format("~s~n", [Module]),
+             ok = file:write_file(OutputFilepath, io_lib:fwrite("~p.\n", [Bin])),
+             {ElmoFile, Bin};
+        X ->
+            {_, Bin} = dump(erlsrc, ElmoFile, Erl),
+            io:format("~s~n~p~n", [Bin, X]),
+            ok = X
+    end;
 
 dump(stdout, ElmoFile, Erl) ->
     io:format("-----~n|~s~n-----~n~s~n", [

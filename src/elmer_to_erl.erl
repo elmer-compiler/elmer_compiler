@@ -130,7 +130,11 @@ to_erl({var, Name}) ->
     {var, ?ELINE, elmer_util:var(Name)};
 
 to_erl(?JSON_LET(Defs, Body)) ->
-    [{match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs] ++ exps(to_erl(Body));
+    [
+     {match, ?ELINE, {var, ?ELINE, elmer_util:var(Name)}, 
+      to_erl(Val)} || ?JSON_DEF(Name, Val) <- Defs
+    ] ++ exps(to_erl(Body));
+
 
 to_erl(?JSON_IF(Conds, Else)) ->
     to_erl({ifelse, Conds, Else});
@@ -156,16 +160,22 @@ to_erl(?JSON_REF(Name, ?JSON_MODULE(Module, Package))) ->
     to_erl({call, {Name, Module, Package}, []});
 
 to_erl(?JSON_REF(Name, ?JSON_TOPLEVEL)) ->
-    {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};
+    NameAtom = {atom, ?ELINE, elmer_util:btoa(Name)},
+    ModuleAtom = {atom, ?ELINE, '?MODULE'},
+    {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, []};
 
 to_erl(?JSON_CALL(Fun, Args)) ->
     {call, ?ELINE, to_erl(Fun), [to_erl({cons, Args})]};
 
 to_erl(?JSON_TAILCALL(Fun, Args)) ->
-    {call, ?ELINE, {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Fun)}, []}, [to_erl({cons, Args})]};
+    ModuleAtom = {atom, ?ELINE, '?MODULE'},
+    NameAtom = {atom, ?ELINE, elmer_util:btoa(Fun)},
+    {call, ?ELINE, {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, []}, [to_erl({cons, Args})]};
 
 to_erl(?JSON_TOPLVAR(Name)) ->
-    {call, ?ELINE, {atom, ?ELINE, elmer_util:btoa(Name)}, []};
+    NameAtom = {atom, ?ELINE, elmer_util:btoa(Name)},
+    ModuleAtom = {atom, ?ELINE, '?MODULE'},
+    {call, ?ELINE, {remote, ?ELINE, ModuleAtom, NameAtom}, []};
 
 to_erl(?JSON_MODVAR(Name, Module, Package)) ->
     to_erl({call, {Name, Module, Package}, []});
@@ -229,7 +239,7 @@ to_erl({ifelse, [[CondA, ThenA] | Conds], Else}) ->
 
 to_erl({ifelse, Cond, Then, Else}) ->
     ThenClause = {clause, ?ELINE, [{atom, 0, true}], [], exps(to_erl(Then))},
-    ElseClause = {clause, ?ELINE, [{var, 0, '_else'}], [], exps(to_erl(Else)) },
+    ElseClause = {clause, ?ELINE, [{var, 0, '_'}], [], exps(to_erl(Else)) },
     {'case', ?ELINE, to_erl(Cond), [ThenClause, ElseClause]};
 
 to_erl({'case', Var, Leaf = ?JSON_LEAF(_), Jumps}) ->
